@@ -4,17 +4,20 @@
 pragma solidity >=0.5.12;
 
 
+//*** at this point it's not too clear what is meant by Gem like. The interface looks similar to ERC20 though
 interface GemLike {
     function decimals() external view returns (uint);
     function transfer(address,uint) external returns (bool);
     function transferFrom(address,address,uint) external returns (bool);
 }
 
+//*** Not sure what DSTokenLike means, but it has a mint and burn function
 interface DSTokenLike {
     function mint(address,uint) external;
     function burn(address,uint) external;
 }
 
+//*** Vat is one of the core contracts, but haven't gotten to that just yet
 interface VatLike {
     function slip(bytes32,address,int) external;
     function move(address,address,uint) external;
@@ -82,17 +85,24 @@ contract GemJoin {
         dec = gem.decimals();
         emit Rely(msg.sender);
     }
+    //*** cage method seems to be used in a lot of these contracts
     function cage() external auth {
         live = 0;
         emit Cage();
     }
+
+    ///*** this method connects the gem to the vat */
     function join(address usr, uint wad) external {
+        //***maybe a modifier for onlyLive would be better
         require(live == 1, "GemJoin/not-live");
+        //*** Why cast to an int ? */
         require(int(wad) >= 0, "GemJoin/overflow");
+        //*** increase users balance of ilk on the vat 
         vat.slip(ilk, usr, int(wad));
         require(gem.transferFrom(msg.sender, address(this), wad), "GemJoin/failed-transfer");
         emit Join(usr, wad);
     }
+    //*** if join connects to the vat, then does exit disconnect?
     function exit(address usr, uint wad) external {
         require(wad <= 2 ** 255, "GemJoin/overflow");
         vat.slip(ilk, msg.sender, -int(wad));
@@ -101,6 +111,7 @@ contract GemJoin {
     }
 }
 
+//*** pretty similar to Dai join */
 contract DaiJoin {
     // --- Auth ---
     mapping (address => uint) public wards;
@@ -138,11 +149,13 @@ contract DaiJoin {
         live = 0;
         emit Cage();
     }
+    //***not clear why 10**27 is used. It's 1 billion times 10**18 though so maybe that has significance */
     uint constant ONE = 10 ** 27;
     function mul(uint x, uint y) internal pure returns (uint z) {
         require(y == 0 || (z = x * y) / y == x);
     }
     function join(address usr, uint wad) external {
+        //*** uses move instead of slip like the  gem adaptor
         vat.move(address(this), usr, mul(ONE, wad));
         dai.burn(msg.sender, wad);
         emit Join(usr, wad);
