@@ -111,7 +111,7 @@ contract GemJoin {
     }
 }
 
-//*** pretty similar to Dai join */
+//*** pretty similar to Gem join */
 contract DaiJoin {
     // --- Auth ---
     mapping (address => uint) public wards;

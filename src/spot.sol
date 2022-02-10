@@ -76,6 +76,7 @@ contract Spotter {
     // --- Update value ---
     function poke(bytes32 ilk) external {
         (bytes32 val, bool has) = ilks[ilk].pip.peek();
+        //*** TODO: have to return to this math. Seems as though it produces a huge number due to rdiv */
         uint256 spot = has ? rdiv(rdiv(mul(uint(val), 10 ** 9), par), ilks[ilk].mat) : 0;
         vat.file(ilk, "spot", spot);
         emit Poke(ilk, val, spot);

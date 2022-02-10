@@ -132,7 +132,7 @@ contract Vat {
         assembly{ z := and(x, y)}
     }
 
-    // --- CDP Manipulation ---
+    // --- CDP Manipulation --- //*** What does CDP stand for? Realize it probably refers to vault but... */
     function frob(bytes32 i, address u, address v, address w, int dink, int dart) external {
         // system is live
         require(live == 1, "Vat/not-live");
@@ -142,10 +142,12 @@ contract Vat {
         // ilk has been initialised
         require(ilk.rate != 0, "Vat/ilk-not-init");
 
+        //incrementing ilk properties and global properties
         urn.ink = add(urn.ink, dink);
         urn.art = add(urn.art, dart);
         ilk.Art = add(ilk.Art, dart);
 
+        //seems art and tab represent debt, but tab is art multiplied by rate
         int dtab = mul(ilk.rate, dart);
         uint tab = mul(ilk.rate, urn.art);
         debt     = add(debt, dtab);
