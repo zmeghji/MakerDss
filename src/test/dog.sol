@@ -128,7 +128,13 @@ contract DogTest is DSTest {
     }
 
     function testFail_bark_not_unsafe() public {
+        // vat.file(ilk, "spot", THOUSAND * RAY);
         setUrn(WAD, 500 * WAD);
+
+        // unsafe means ilk* spot < art*rate
+        // ilk* spot = WAD * THOUSAND * RAY 
+        // art*rate = 500*WAD*RAY
+
         dog.bark(ilk, usr, address(this));
     }
 
@@ -137,6 +143,10 @@ contract DogTest is DSTest {
         uint256 dust = 200;
         vat.file(ilk, "dust", dust * RAD);
         setUrn(1, (dust / 2) * WAD);
+
+        //What makes it dusty? debt is less than dust
+        //dust is 200*RAD
+        // debt is 100*WAD*RAY
         assertTrue(isDusty());
         dog.bark(ilk, usr, address(this));
     }
@@ -146,8 +156,17 @@ contract DogTest is DSTest {
         vat.file(ilk, "dust", dust * RAD);
         uint256 hole = 5 * THOUSAND;
         dog.file(ilk, "hole", hole * RAD);
+
         (, uint256 chop,,) = dog.ilks(ilk);
+
+        // dog.file(ilk, "chop", 11 * WAD / 10); 1.1 WAD
+
         uint256 artStart = hole * WAD * WAD / chop + dust * WAD - 1;
+        // uint256 artStart = 5000 * WAD * WAD / 1.1 WAD + 200 * WAD - 1;
+        // uint256 artStart = 5000 * WAD/1.1  + 200 * WAD - 1;
+
+
+
         setUrn(WAD, artStart);
         dog.bark(ilk, usr, address(this));
         assertTrue(!isDusty());
